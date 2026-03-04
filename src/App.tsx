@@ -39,7 +39,7 @@ export default function App() {
     setErrorMessage("");
 
     try {
-      const targetUrl = "/api/register";
+      const targetUrl = "/gravar-inscricao-videira";
       console.log(`Tentando enviar para: ${targetUrl}`);
       
       const response = await fetch(targetUrl, {
@@ -56,7 +56,7 @@ export default function App() {
       } else {
         setStatus("error");
         const detail = data?.error || `Status ${response.status}`;
-        setErrorMessage(`O servidor respondeu com erro em ${targetUrl}: ${detail}`);
+        setErrorMessage(`Erro de Rota: O servidor não encontrou o caminho ${targetUrl}. Tente atualizar a página com Ctrl+F5.`);
       }
     } catch (error: any) {
       console.error("Erro na inscrição:", error);
@@ -241,6 +241,17 @@ export default function App() {
                         </>
                       )}
                     </button>
+
+                    <div className="mt-4 flex flex-col items-center gap-1 opacity-20 hover:opacity-100 transition-opacity">
+                      <p className="text-[10px] font-mono text-white">Versão 2.0 - Rota: /gravar-inscricao-videira</p>
+                      <button 
+                        type="button"
+                        onClick={() => fetch("/ping-teste").then(r => r.text()).then(t => alert(`Resposta do Servidor: ${t}`))}
+                        className="text-[9px] underline hover:text-purple-400"
+                      >
+                        Testar Conexão
+                      </button>
+                    </div>
                   </motion.form>
                 )}
               </AnimatePresence>

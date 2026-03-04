@@ -17,24 +17,9 @@ async function startServer() {
   app.use(cors());
   app.use(bodyParser.json());
 
-  // Log de todas as requisições para diagnóstico
-  app.use((req, res, next) => {
-    console.log(`[LOG] ${req.method} ${req.url}`);
-    next();
-  });
-
-  // Rota de teste direta
-  app.get("/status", (req, res) => {
-    res.send("<h1>Servidor Express: ONLINE</h1><p>Se voce ve esta mensagem, a rota esta funcionando.</p>");
-  });
-
-  app.get("/api/ping", (req, res) => {
-    res.json({ status: "online", message: "Servidor respondendo corretamente!" });
-  });
-
-  // ROTA UNIVERSAL DE REGISTRO (Aceita vários caminhos para evitar 404)
-  const handleRegister = async (req: any, res: any) => {
-    console.log(">>> RECEBIDA TENTATIVA DE INSCRIÇÃO:", req.body.name);
+  // ROTA ÚNICA E DIRETA (Sem prefixo /api para evitar bloqueios)
+  app.post("/gravar-inscricao-videira", async (req: any, res: any) => {
+    console.log(">>> TENTATIVA DE GRAVAÇÃO:", req.body.name);
     try {
       const { name, phone, email, discipler } = req.body;
       const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
@@ -42,7 +27,7 @@ async function startServer() {
       const sheetId = process.env.GOOGLE_SHEET_ID;
 
       if (!serviceAccountEmail || !privateKey || !sheetId) {
-        return res.status(500).json({ error: "Configuração incompleta nos Secrets." });
+        return res.status(500).json({ error: "Configuração ausente nos Secrets." });
       }
 
       const serviceAccountAuth = new JWT({
@@ -66,14 +51,15 @@ async function startServer() {
       console.log(">>> INSCRIÇÃO SALVA COM SUCESSO!");
       res.json({ success: true });
     } catch (error: any) {
-      console.error(">>> ERRO NO GOOGLE SHEETS:", error.message);
+      console.error(">>> ERRO NO GOOGLE:", error.message);
       res.status(500).json({ error: error.message });
     }
-  };
+  });
 
-  app.post("/register", handleRegister);
-  app.post("/api/register", handleRegister);
-  app.post("/submit-registration", handleRegister);
+  // Rota de teste simples
+  app.get("/ping-teste", (req, res) => {
+    res.send("OK");
+  });
 
   // Middleware do Vite ou Arquivos Estáticos
   if (process.env.NODE_ENV !== "production") {
