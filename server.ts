@@ -17,13 +17,14 @@ async function startServer() {
   app.use(cors());
   app.use(bodyParser.json());
 
-  // Rota de Diagnóstico
-  app.get("/api/ping", (req, res) => {
+  // Roteador de API isolado
+  const apiRouter = express.Router();
+
+  apiRouter.get("/ping", (req, res) => {
     res.json({ status: "online", timestamp: new Date().toISOString() });
   });
 
-  // Google Sheets Integration
-  app.post("/api/register", async (req, res) => {
+  apiRouter.post("/register", async (req, res) => {
     console.log("Recebendo nova inscrição:", req.body.name);
     try {
       const { name, phone, email, discipler } = req.body;
@@ -80,6 +81,14 @@ async function startServer() {
 
       res.status(500).json({ error: userFriendlyError });
     }
+  });
+
+  // Monta o roteador de API
+  app.use("/api", apiRouter);
+
+  // Fallback para rotas de API não encontradas
+  app.use("/api/*", (req, res) => {
+    res.status(404).json({ error: `Rota API não encontrada: ${req.method} ${req.originalUrl}` });
   });
 
   // Vite middleware for development

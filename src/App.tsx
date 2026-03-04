@@ -42,7 +42,8 @@ export default function App() {
       // Teste de ping antes de enviar (opcional, mas ajuda no log)
       console.log("Iniciando tentativa de inscrição...");
       
-      const response = await fetch("/api/register", {
+      // Cache-busting para evitar 404 de versões antigas
+      const response = await fetch(`/api/register?t=${Date.now()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
