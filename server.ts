@@ -17,6 +17,11 @@ async function startServer() {
   app.use(cors());
   app.use(bodyParser.json());
 
+  // Rota de Diagnóstico
+  app.get("/api/ping", (req, res) => {
+    res.json({ status: "online", timestamp: new Date().toISOString() });
+  });
+
   // Google Sheets Integration
   app.post("/api/register", async (req, res) => {
     console.log("Recebendo nova inscrição:", req.body.name);

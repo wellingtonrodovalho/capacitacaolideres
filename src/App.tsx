@@ -39,20 +39,26 @@ export default function App() {
     setErrorMessage("");
 
     try {
+      // Teste de ping antes de enviar (opcional, mas ajuda no log)
+      console.log("Iniciando tentativa de inscrição...");
+      
       const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const isJson = response.headers.get("content-type")?.includes("application/json");
+      const contentType = response.headers.get("content-type");
+      const isJson = contentType && contentType.includes("application/json");
       const data = isJson ? await response.json() : null;
 
       if (response.ok) {
         setStatus("success");
       } else {
         setStatus("error");
-        setErrorMessage(data?.error || `Erro ${response.status}: ${response.statusText}`);
+        // Se não for JSON, o servidor pode estar retornando um erro HTML (404/500 padrão)
+        const errorMsg = data?.error || `Erro ${response.status}: ${response.statusText || 'Servidor não encontrou a rota'}`;
+        setErrorMessage(errorMsg);
       }
     } catch (error: any) {
       console.error("Erro na inscrição:", error);
