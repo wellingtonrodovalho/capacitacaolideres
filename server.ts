@@ -12,35 +12,29 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  console.log("Iniciando servidor em modo:", process.env.NODE_ENV || "development");
+  console.log("Servidor iniciando...");
 
   app.use(cors());
   app.use(bodyParser.json());
 
-  // Roteador de API isolado
-  const apiRouter = express.Router();
-
-  apiRouter.get("/ping", (req, res) => {
-    res.json({ status: "online", timestamp: new Date().toISOString() });
+  // Rota de teste direta (sem roteador para evitar erros)
+  app.get("/api/ping", (req, res) => {
+    res.json({ status: "online", time: new Date().toISOString() });
   });
 
-  apiRouter.post("/register", async (req, res) => {
-    console.log("Recebendo nova inscrição:", req.body.name);
+  // Rota de Registro direta
+  app.post("/api/register", async (req, res) => {
+    console.log("Requisição de registro recebida!");
     try {
       const { name, phone, email, discipler } = req.body;
-
-      if (!name || !phone || !email || !discipler) {
-        return res.status(400).json({ error: "Todos os campos são obrigatórios." });
-      }
 
       const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
       const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
       const sheetId = process.env.GOOGLE_SHEET_ID;
 
       if (!serviceAccountEmail || !privateKey || !sheetId) {
-        console.error("Configuração ausente:", { serviceAccountEmail: !!serviceAccountEmail, privateKey: !!privateKey, sheetId: !!sheetId });
         return res.status(500).json({ 
-          error: "Configuração do Google Sheets incompleta. Verifique se você adicionou as chaves (GOOGLE_SHEET_ID, etc.) no painel de Secrets do AI Studio." 
+          error: "Configuração incompleta nos Secrets do AI Studio (Faltam chaves do Google)." 
         });
       }
 
@@ -52,8 +46,7 @@ async function startServer() {
 
       const doc = new GoogleSpreadsheet(sheetId, serviceAccountAuth);
       await doc.loadInfo();
-      
-      const sheet = doc.sheetsByIndex[0]; // Assumes the first sheet is the target
+      const sheet = doc.sheetsByIndex[0];
       
       await sheet.addRow({
         "Data/Hora": new Date().toLocaleString("pt-BR"),
@@ -65,33 +58,15 @@ async function startServer() {
 
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Erro detalhado do Google Sheets:", error);
-      
-      let userFriendlyError = "Erro ao salvar inscrição.";
-      
-      if (error.message?.includes("403")) {
-        userFriendlyError = "Erro de Permissão (403): Você esqueceu de COMPARTILHAR a planilha com o e-mail da Conta de Serviço como 'Editor'.";
-      } else if (error.message?.includes("401")) {
-        userFriendlyError = "Erro de Autenticação (401): A Chave Privada ou o E-mail da Conta de Serviço nos 'Secrets' estão incorretos.";
-      } else if (error.message?.includes("404")) {
-        userFriendlyError = "Planilha não encontrada (404): Verifique se o GOOGLE_SHEET_ID nos 'Secrets' está correto.";
-      } else if (error.message?.includes("header")) {
-        userFriendlyError = "Erro de Cabeçalho: Verifique se a primeira linha da planilha contém os nomes: Data/Hora, Nome, Telefone, Email, Discipulador.";
-      }
-
-      res.status(500).json({ error: userFriendlyError });
+      console.error("Erro Google Sheets:", error.message);
+      let msg = "Erro ao salvar na planilha.";
+      if (error.message.includes("403")) msg = "Erro 403: Compartilhe a planilha com o e-mail da Conta de Serviço!";
+      if (error.message.includes("404")) msg = "Erro 404: ID da Planilha incorreto!";
+      res.status(500).json({ error: msg });
     }
   });
 
-  // Monta o roteador de API
-  app.use("/api", apiRouter);
-
-  // Fallback para rotas de API não encontradas
-  app.use("/api/*", (req, res) => {
-    res.status(404).json({ error: `Rota API não encontrada: ${req.method} ${req.originalUrl}` });
-  });
-
-  // Vite middleware for development
+  // Middleware do Vite ou Arquivos Estáticos
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -106,7 +81,7 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
+    console.log(`Servidor rodando na porta ${PORT}`);
   });
 }
 
