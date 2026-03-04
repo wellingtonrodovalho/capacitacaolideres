@@ -17,9 +17,15 @@ async function startServer() {
   app.use(cors());
   app.use(bodyParser.json());
 
-  // Rota de teste direta (sem roteador para evitar erros)
+  // Log de todas as requisições para diagnóstico
+  app.use((req, res, next) => {
+    console.log(`[LOG] ${req.method} ${req.url}`);
+    next();
+  });
+
+  // Rota de teste direta
   app.get("/api/ping", (req, res) => {
-    res.json({ status: "online", time: new Date().toISOString() });
+    res.json({ status: "online", message: "Servidor respondendo corretamente!" });
   });
 
   // Rota de Registro direta

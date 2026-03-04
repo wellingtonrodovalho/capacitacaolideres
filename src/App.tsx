@@ -39,32 +39,27 @@ export default function App() {
     setErrorMessage("");
 
     try {
-      // Teste de ping antes de enviar (opcional, mas ajuda no log)
       console.log("Iniciando tentativa de inscrição...");
       
-      // Cache-busting para evitar 404 de versões antigas
-      const response = await fetch(`/api/register?t=${Date.now()}`, {
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       const contentType = response.headers.get("content-type");
-      const isJson = contentType && contentType.includes("application/json");
-      const data = isJson ? await response.json() : null;
+      const data = contentType?.includes("application/json") ? await response.json() : null;
 
       if (response.ok) {
         setStatus("success");
       } else {
         setStatus("error");
-        // Se não for JSON, o servidor pode estar retornando um erro HTML (404/500 padrão)
-        const errorMsg = data?.error || `Erro ${response.status}: ${response.statusText || 'Servidor não encontrou a rota'}`;
-        setErrorMessage(errorMsg);
+        setErrorMessage(data?.error || `Erro ${response.status}: O servidor não encontrou a rota de salvamento.`);
       }
     } catch (error: any) {
       console.error("Erro na inscrição:", error);
       setStatus("error");
-      setErrorMessage("Erro de conexão: Verifique se o servidor está rodando ou se as chaves do Google Sheets foram configuradas.");
+      setErrorMessage("Erro de conexão: O servidor pode estar fora do ar ou reiniciando.");
     }
   };
 
