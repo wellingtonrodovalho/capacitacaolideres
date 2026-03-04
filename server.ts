@@ -17,6 +17,7 @@ async function startServer() {
 
   // Google Sheets Integration
   app.post("/api/register", async (req, res) => {
+    console.log("Recebendo nova inscrição:", req.body.name);
     try {
       const { name, phone, email, discipler } = req.body;
 
@@ -29,8 +30,10 @@ async function startServer() {
       const sheetId = process.env.GOOGLE_SHEET_ID;
 
       if (!serviceAccountEmail || !privateKey || !sheetId) {
-        console.error("Missing Google Sheets configuration");
-        return res.status(500).json({ error: "Configuração do servidor incompleta (Google Sheets)." });
+        console.error("Configuração ausente:", { serviceAccountEmail: !!serviceAccountEmail, privateKey: !!privateKey, sheetId: !!sheetId });
+        return res.status(500).json({ 
+          error: "Configuração do Google Sheets incompleta. Verifique se você adicionou as chaves (GOOGLE_SHEET_ID, etc.) no painel de Secrets do AI Studio." 
+        });
       }
 
       const serviceAccountAuth = new JWT({
@@ -54,8 +57,21 @@ async function startServer() {
 
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Error saving to Google Sheets:", error);
-      res.status(500).json({ error: "Erro ao salvar inscrição. Verifique os logs do servidor." });
+      console.error("Erro detalhado do Google Sheets:", error);
+      
+      let userFriendlyError = "Erro ao salvar inscrição.";
+      
+      if (error.message?.includes("403")) {
+        userFriendlyError = "Erro de Permissão (403): Você esqueceu de COMPARTILHAR a planilha com o e-mail da Conta de Serviço como 'Editor'.";
+      } else if (error.message?.includes("401")) {
+        userFriendlyError = "Erro de Autenticação (401): A Chave Privada ou o E-mail da Conta de Serviço nos 'Secrets' estão incorretos.";
+      } else if (error.message?.includes("404")) {
+        userFriendlyError = "Planilha não encontrada (404): Verifique se o GOOGLE_SHEET_ID nos 'Secrets' está correto.";
+      } else if (error.message?.includes("header")) {
+        userFriendlyError = "Erro de Cabeçalho: Verifique se a primeira linha da planilha contém os nomes: Data/Hora, Nome, Telefone, Email, Discipulador.";
+      }
+
+      res.status(500).json({ error: userFriendlyError });
     }
   });
 

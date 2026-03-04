@@ -45,17 +45,19 @@ export default function App() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const isJson = response.headers.get("content-type")?.includes("application/json");
+      const data = isJson ? await response.json() : null;
 
       if (response.ok) {
         setStatus("success");
       } else {
         setStatus("error");
-        setErrorMessage(data.error || "Ocorreu um erro ao processar sua inscrição.");
+        setErrorMessage(data?.error || `Erro ${response.status}: ${response.statusText}`);
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Erro na inscrição:", error);
       setStatus("error");
-      setErrorMessage("Erro de conexão com o servidor.");
+      setErrorMessage("Erro de conexão: Verifique se o servidor está rodando ou se as chaves do Google Sheets foram configuradas.");
     }
   };
 
