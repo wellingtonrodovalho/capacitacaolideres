@@ -39,29 +39,25 @@ export default function App() {
     setErrorMessage("");
 
     try {
-      const targetUrl = "/gravar-inscricao-videira";
-      console.log(`Tentando enviar para: ${targetUrl}`);
+      // Usando a URL do Google Apps Script fornecida pelo usuário
+      const targetUrl = "https://script.google.com/macros/s/AKfycbw-6IgWt--x1CKVWYZKyXRmHET4-lHJLxOSV8jmiAJt4GusxnRi8gS3f61hgvexCga7/exec";
       
-      const response = await fetch(targetUrl, {
+      console.log(`Enviando dados para o Google Sheets via Apps Script...`);
+      
+      // Usamos 'no-cors' para evitar problemas de redirecionamento do Google
+      await fetch(targetUrl, {
         method: "POST",
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const contentType = response.headers.get("content-type");
-      const data = contentType?.includes("application/json") ? await response.json() : null;
-
-      if (response.ok) {
-        setStatus("success");
-      } else {
-        setStatus("error");
-        const detail = data?.error || `Status ${response.status}`;
-        setErrorMessage(`Erro de Rota: O servidor não encontrou o caminho ${targetUrl}. Tente atualizar a página com Ctrl+F5.`);
-      }
+      // Como o 'no-cors' não permite ler a resposta, assumimos sucesso se o fetch não lançar erro
+      setStatus("success");
     } catch (error: any) {
       console.error("Erro na inscrição:", error);
       setStatus("error");
-      setErrorMessage("Erro de conexão: O servidor pode estar fora do ar ou reiniciando.");
+      setErrorMessage("Erro ao conectar com o Google Sheets. Verifique sua conexão.");
     }
   };
 
@@ -241,17 +237,6 @@ export default function App() {
                         </>
                       )}
                     </button>
-
-                    <div className="mt-4 flex flex-col items-center gap-1 opacity-20 hover:opacity-100 transition-opacity">
-                      <p className="text-[10px] font-mono text-white">Versão 2.0 - Rota: /gravar-inscricao-videira</p>
-                      <button 
-                        type="button"
-                        onClick={() => fetch("/ping-teste").then(r => r.text()).then(t => alert(`Resposta do Servidor: ${t}`))}
-                        className="text-[9px] underline hover:text-purple-400"
-                      >
-                        Testar Conexão
-                      </button>
-                    </div>
                   </motion.form>
                 )}
               </AnimatePresence>
