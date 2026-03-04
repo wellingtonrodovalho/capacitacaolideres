@@ -24,6 +24,10 @@ async function startServer() {
   });
 
   // Rota de teste direta
+  app.get("/status", (req, res) => {
+    res.send("<h1>Servidor Express: ONLINE</h1><p>Se voce ve esta mensagem, a rota esta funcionando.</p>");
+  });
+
   app.get("/api/ping", (req, res) => {
     res.json({ status: "online", message: "Servidor respondendo corretamente!" });
   });
