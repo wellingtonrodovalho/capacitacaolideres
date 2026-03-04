@@ -88,6 +88,18 @@ export default function App() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
+          <div className="flex justify-center mb-8">
+            <img 
+              src="/logo.png" 
+              alt="Videira Logo" 
+              className="h-24 md:h-32 w-auto object-contain"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                // Fallback se a imagem não for encontrada
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-4 uppercase">
             Capacitação <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Líderes</span>
           </h1>
