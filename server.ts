@@ -12,6 +12,8 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  console.log("Iniciando servidor em modo:", process.env.NODE_ENV || "development");
+
   app.use(cors());
   app.use(bodyParser.json());
 

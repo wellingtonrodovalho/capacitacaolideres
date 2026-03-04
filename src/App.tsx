@@ -92,7 +92,7 @@ export default function App() {
             Capacitação <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Líderes</span>
           </h1>
           <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto font-light leading-relaxed">
-            Rede de Adultos - Videira Botânico
+            Rede de Adultos - Videira Botânico <span className="text-[10px] opacity-20">v1.1</span>
           </p>
         </motion.div>
 
