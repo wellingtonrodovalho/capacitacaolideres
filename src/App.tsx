@@ -39,9 +39,10 @@ export default function App() {
     setErrorMessage("");
 
     try {
-      console.log("Iniciando tentativa de inscrição...");
+      const targetUrl = "/api/register";
+      console.log(`Tentando enviar para: ${targetUrl}`);
       
-      const response = await fetch(`${window.location.origin}/submit-registration`, {
+      const response = await fetch(targetUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -54,7 +55,8 @@ export default function App() {
         setStatus("success");
       } else {
         setStatus("error");
-        setErrorMessage(data?.error || `Erro ${response.status}: O servidor não encontrou a rota de salvamento.`);
+        const detail = data?.error || `Status ${response.status}`;
+        setErrorMessage(`O servidor respondeu com erro em ${targetUrl}: ${detail}`);
       }
     } catch (error: any) {
       console.error("Erro na inscrição:", error);

@@ -32,20 +32,17 @@ async function startServer() {
     res.json({ status: "online", message: "Servidor respondendo corretamente!" });
   });
 
-  // Rota de Registro direta
-  app.post("/submit-registration", async (req, res) => {
-    console.log("Requisição de registro recebida!");
+  // ROTA UNIVERSAL DE REGISTRO (Aceita vários caminhos para evitar 404)
+  const handleRegister = async (req: any, res: any) => {
+    console.log(">>> RECEBIDA TENTATIVA DE INSCRIÇÃO:", req.body.name);
     try {
       const { name, phone, email, discipler } = req.body;
-
       const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
       const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
       const sheetId = process.env.GOOGLE_SHEET_ID;
 
       if (!serviceAccountEmail || !privateKey || !sheetId) {
-        return res.status(500).json({ 
-          error: "Configuração incompleta nos Secrets do AI Studio (Faltam chaves do Google)." 
-        });
+        return res.status(500).json({ error: "Configuração incompleta nos Secrets." });
       }
 
       const serviceAccountAuth = new JWT({
@@ -66,15 +63,17 @@ async function startServer() {
         "Discipulador": discipler
       });
 
+      console.log(">>> INSCRIÇÃO SALVA COM SUCESSO!");
       res.json({ success: true });
     } catch (error: any) {
-      console.error("Erro Google Sheets:", error.message);
-      let msg = "Erro ao salvar na planilha.";
-      if (error.message.includes("403")) msg = "Erro 403: Compartilhe a planilha com o e-mail da Conta de Serviço!";
-      if (error.message.includes("404")) msg = "Erro 404: ID da Planilha incorreto!";
-      res.status(500).json({ error: msg });
+      console.error(">>> ERRO NO GOOGLE SHEETS:", error.message);
+      res.status(500).json({ error: error.message });
     }
-  });
+  };
+
+  app.post("/register", handleRegister);
+  app.post("/api/register", handleRegister);
+  app.post("/submit-registration", handleRegister);
 
   // Middleware do Vite ou Arquivos Estáticos
   if (process.env.NODE_ENV !== "production") {
