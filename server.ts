@@ -29,7 +29,7 @@ async function startServer() {
   });
 
   // Rota de Registro direta
-  app.post("/api/register", async (req, res) => {
+  app.post("/submit-registration", async (req, res) => {
     console.log("Requisição de registro recebida!");
     try {
       const { name, phone, email, discipler } = req.body;

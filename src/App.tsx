@@ -41,7 +41,7 @@ export default function App() {
     try {
       console.log("Iniciando tentativa de inscrição...");
       
-      const response = await fetch("/api/register", {
+      const response = await fetch("/submit-registration", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
